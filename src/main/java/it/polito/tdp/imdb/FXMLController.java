@@ -7,6 +7,7 @@ package it.polito.tdp.imdb;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.imdb.model.Actor;
 import it.polito.tdp.imdb.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -35,10 +36,10 @@ public class FXMLController {
     private Button btnSimulazione; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxGenere"
-    private ComboBox<?> boxGenere; // Value injected by FXMLLoader
+    private ComboBox<String> boxGenere; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxAttore"
-    private ComboBox<?> boxAttore; // Value injected by FXMLLoader
+    private ComboBox<Actor> boxAttore; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtGiorni"
     private TextField txtGiorni; // Value injected by FXMLLoader
@@ -48,16 +49,69 @@ public class FXMLController {
 
     @FXML
     void doAttoriSimili(ActionEvent event) {
-
+    	txtResult.clear();
+    	if(this.model.getGrafo() == null) {
+    		txtResult.appendText("Crea prima il grafo!");
+    		return;
+    	}
+    	
+    	Actor attore = boxAttore.getValue();
+    	if(attore == null) {
+    		txtResult.appendText("Seleziona l'attore!");
+    		return;
+    	}
+    	
+    	txtResult.appendText("Gli attori simili a " + attore.toString() + " sono:\n");
+    	
+    	for(Actor a : this.model.trovaAttoriSimili(attore))
+    		txtResult.appendText(a.toString() + "\n");
+    
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
+    	String genere = boxGenere.getValue();
+    	if(genere == null) {
+    		txtResult.appendText("Seleziona il genere!");
+    		return;
+    	}
+    	
+    	String msg = this.model.creaGrafo(genere);
+    	txtResult.appendText(msg);
+    	
+    	boxAttore.getItems().addAll(this.model.listaVertici());    		
 
     }
 
     @FXML
     void doSimulazione(ActionEvent event) {
+    	txtResult.clear();
+    	if(this.model.getGrafo() == null) {
+    		txtResult.appendText("Crea prima il grafo!");
+    		return;
+    	}
+    	
+    	try {
+    		int giorni = Integer.parseInt(txtGiorni.getText());
+    		
+    		if(giorni <=0) {
+    		txtResult.appendText("Deve essere un numero maggiore di 0!");
+    		return;
+    	    }
+    		
+    		String msg = this.model.simula(giorni);
+    		txtResult.appendText(msg);
+    		
+    	} catch (NumberFormatException e) {
+    		txtResult.appendText("Deve essere un numero intero!");
+    		return;    		
+    	}
+    	
+    	
+
+    	
+    	
 
     }
 
@@ -75,5 +129,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.boxGenere.getItems().addAll(this.model.getGenres());
     }
 }
